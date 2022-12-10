@@ -1,0 +1,31 @@
+h1 {
+	font-size:40px;
+}
+
+body {
+	background: rgb(98, 145, 222);
+}
+
+#test11{
+	background: rgb(241, 241, 241);
+}
+
+#labeltext{
+	background: #fff;
+}
+.btn{
+	background-color: rgb(98, 145, 222);
+	border-color: rgb(98, 145, 222);
+	text-emphasis-color: rgb(173, 173, 173);
+}
+
+.btn:hover{
+	color:#fff;
+	background-color: rgb(51, 52, 58);
+	border-color: rgb(51, 52, 58);
+}
+
+a{
+	color:#000;
+	text-decoration: double;
+}
