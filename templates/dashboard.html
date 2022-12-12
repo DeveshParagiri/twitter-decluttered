@@ -32,7 +32,8 @@
 <br/>
 <div class="card">
 <div class="card-header">
-{{ current_user.username }}
+    <p></p>
+    <h5>Welcome {{ current_user.username }}!</h5>
 </div>
 <div class="card-body">
 
@@ -40,16 +41,48 @@
 
 <div class="container">
 <div class="row">
-    <div class="col-8">
-       <!-- {{ data }} -->
-
-       {% for item in data %}
-        <ul>{{item}}</ul>
+    <div class="col">
+        <h5>Personal Tweet Feed</h5><br/>
+       {% for item in personaltweetcollate %}
+        <div class="card">
+            <div class="card-header">
+                <p class="card-header"><b>@{{ item["user_handle"] }}</b></p>
+                </div>
+                <div class="card-body">
+                <div class="container">
+                    <div class="row">
+                        <p class = "card-text"> {{ item["content"] }} </p> <br/>
+                        <p class = "card-text"> Likes &hearts;: {{item["likes"]}}</p>
+                        <p class = "card-text"> View in &#128038;: {{ item["url"] }} </p> <br/>
+                    </div>
+                    </div>
+                </div>
+            </div><br/>
        {% endfor %} 
-</p>
+       <h5>Work Tweet Feed</h5><br/>
+       {% for item in worktweetcollate %}
+        <div class="card">
+            <div class="card-header">
+                <p class="card-header"><b>@{{ item["user_handle"] }}</b></p>
+                </div>
+                <div class="card-body">
+                <div class="container">
+                    <div class="row">
+                        <p class = "card-text"> {{ item["content"] }} </p> <br/>
+                        <p class = "card-text"> Likes &hearts;: {{item["likes"]}}</p>
+                        <p class = "card-text"> View in &#128038;: {{ item["url"] }} </p> <br/>
+                    </div>
+                    </div>
+                </div>
+            </div><br/>
+       {% endfor %} 
 
+</p>
+    <a href="{{ url_for('settings')}}" class="btn btn-secondary btn-sm">Settings</a>
+    <br/>
+    <br/>
     <a href="{{ url_for('logout')}}" class="btn btn-secondary btn-sm">Logout</a>
-    <br/><br/>
+    <br/>
 
     
 	</div>

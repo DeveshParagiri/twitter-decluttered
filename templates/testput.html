@@ -1,0 +1,55 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+</head>
+<body>
+    <h1>Hello you are logged in</h1>
+    <h1>{{ display_name }}</h1>
+    <a href="{{url_for('logout')}}">Logout here</a>
+</body>
+</html> -->
+
+{% extends 'base.html' %}
+{% block content %}
+
+{% for message in get_flashed_messages() %}
+	
+	<div class="alert alert-warning alert-dismissible fade show" role="alert">
+	  {{ message }}
+	  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+	</div>
+
+	
+{% endfor %}
+
+
+
+<h2>TestPut</h2>
+<br/>
+<div class="card">
+<div class="card-header">
+{{ current_user.username }}
+</div>
+<div class="card-body">
+
+<p class="card-text">
+
+<div class="container">
+<div class="row">
+    <div class="col-8">
+        {{ worktweets }}
+        {{ personaltweets }}
+</p>
+
+    <a href="{{ url_for('dashboard')}}" class="btn btn-secondary btn-sm">Dashboard</a>
+    <br/><br/>
+
+    
+	</div>
+	</div>
+	
+{% endblock %}

@@ -1,11 +1,9 @@
 from flask import Flask, flash, render_template, url_for, redirect, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin, LoginManager, login_required, login_user, logout_user, current_user
-from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField
-from wtforms.validators import InputRequired, Length, ValidationError
 from flask_bcrypt import Bcrypt
 import tweetscrape
+from webforms import RegisterForm,LoginForm,TweetsForm
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
@@ -37,40 +35,17 @@ class User(db.Model, UserMixin):
     def __str__(self) -> str:
         return self.username
 
-class RegisterForm(FlaskForm):
-    username = StringField(validators=[InputRequired(), 
-        Length(min=4, max=20)], render_kw={"placeholder":"Username"})
-    
-    password = PasswordField(validators=[InputRequired(), 
-        Length(min=4, max=20)], render_kw={"placeholder":"Password"})
-
-    submit = SubmitField("Register")
-
-    # def validate_username(self, username):
-    #     existing_user_username = User.query.filter_by(
-    #         username=username.data).first()
-    #     if existing_user_username:
-    #         flash("User already exists!")
-
-class LoginForm(FlaskForm):
-    username = StringField(validators=[InputRequired(), 
-        Length(min=4, max=20)], render_kw={"placeholder":"Username"})
-    
-    password = PasswordField(validators=[InputRequired(), 
-        Length(min=4, max=20)], render_kw={"placeholder":"Password"})
-
-    submit = SubmitField("Login")
-
-# @app.route('/')
-# def home():
-#     return render_template('base.html')
+class TweetHandles(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    worktweets = db.Column(db.JSON)
+    personaltweets = db.Column(db.JSON)
+    connection_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
 @app.route('/', methods=['GET','POST'])
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        # exists = db.session.query(User.id).filter_by(username=form.username.data).first() is not None
-        # if exists:
+
         user = User.query.filter_by(username=form.username.data).first()
         if user:
             if bcrypt.check_password_hash(user.password,form.password.data):
@@ -93,7 +68,6 @@ def logout():
 @app.route('/register',methods=['GET','POST'])
 def register():
     form = RegisterForm()
-    # form.validate_username(form.username)
     if db.session.query(User.id).filter_by(username=form.username.data).first() is not None:
         flash("User already exists!")
     elif form.validate_on_submit():
@@ -108,13 +82,53 @@ def register():
 @app.route('/dashboard',methods=['GET','POST'])
 @login_required
 def dashboard():
-    data = tweetscrape.randomtweet('thequote',9)
-    return render_template('dashboard.html',data=data)
+    form = TweetsForm()
+
+    if TweetHandles.query.filter_by(connection_id=current_user.id).first() is None:
+        flash("To begin add handles!")
+        return redirect(url_for('settings'))
+
+    relevant_data = TweetHandles.query.filter_by(connection_id=current_user.id).first()
+    worktweets = relevant_data.worktweets
+    personaltweets = relevant_data.personaltweets
+
+    personaltweetcollate = tweetscrape.tweetfeed(personaltweets,'PERSONAL')
+    worktweetcollate = tweetscrape.tweetfeed(worktweets,'WORK')
+
+    return render_template('dashboard.html',form=form,
+                personaltweetcollate=personaltweetcollate,
+                    worktweetcollate=worktweetcollate)
 
 
-# @app.route('/test')
-# def test():
-#     sites = [1,2,2,3,4]
-#     return render_template('home.html',sites=sites)
+@app.route('/settings',methods=['GET','POST'])
+@login_required
+def settings():
+    form = TweetsForm()
+    if form.validate_on_submit():
+        current_id = current_user.id
+
+        if tweetscrape.checkvalidall(form.worktweets.data) == False:
+            flash("One of your work tweet handles does not pass the requirements!")
+            return redirect(url_for('settings'))
+        if tweetscrape.checkvalidall(form.personaltweets.data) == False:
+            flash("One of your personal tweet handles does not pass the requirements!")
+            return redirect(url_for('settings'))
+        
+        if TweetHandles.query.filter_by(connection_id=current_user.id).first() is None:
+            tweet_data = TweetHandles(worktweets={'WORK':form.worktweets.data},personaltweets={'PERSONAL':form.personaltweets.data},connection_id=current_id)
+            db.session.add(tweet_data)
+            db.session.commit()
+            
+        else:
+            existing_tweet_data = TweetHandles.query.filter_by(connection_id=current_user.id).first()
+            existing_tweet_data.worktweets = {'WORK':form.worktweets.data}
+            existing_tweet_data.personaltweets = {'PERSONAL':form.personaltweets.data}
+            db.session.add(existing_tweet_data)
+            db.session.commit()
+
+        return redirect(url_for('dashboard'))
+    return render_template('settings.html',form=form)
+
+
 if __name__ == '__main__':
     app.run(debug=True )
