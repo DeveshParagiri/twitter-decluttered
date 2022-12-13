@@ -129,3 +129,6 @@ def settings():
         return redirect(url_for('dashboard'))
     return render_template('settings.html',form=form)
 
+
+with app.app_context():
+    db.create_all()
