@@ -6,21 +6,17 @@
 ### To install on your local machine
 ```
 git clone https://github.com/DeveshParagiri/twitter-decluttered.git
-
 ```
 ```
 python3 -m venv env
 source env/bin/activate
 pip3 install -r requirements.txt
-
 ```
 ### To run it locally:
 ```
 gunicorn run:app
-
 ```
-### or :
+### or if you don't have gunicorn support :
 ```
 python3 run.py
-
 ```
